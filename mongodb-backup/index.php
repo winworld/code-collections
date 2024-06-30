@@ -21,8 +21,8 @@
                     ],
                     'ftp' => [
                         'ftp_server' => '108.167.181.59',
-                        'ftp_user' => 'sqlbak@ridatextiles.com',
-                        'ftp_password' => 'P^Lhc]4Zk($c',
+                        'ftp_user' => '',
+                        'ftp_password' => '',
                         'ftp_remote_folder' => '',
                         'ftps' => false,
                         'ftp_passive_mode' => true
