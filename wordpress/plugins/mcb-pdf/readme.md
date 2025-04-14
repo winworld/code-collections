@@ -16,4 +16,4 @@ composer install
 ### Usage ###
 1. In mcb-pdf.php, find the constant variable - **MCB_ALLOWED_POST_TYPES**
 2. Add/remove other post type slug to this constant variable. 
-3. Then you will see the **Download PDF** button on edit hearer bar of the admin section of the allowed post type(s).
+3. Then you will see the **Download PDF** button on the header bar of the edit screen of the allowed post type(s).
