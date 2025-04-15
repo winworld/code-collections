@@ -4,7 +4,7 @@ namespace ArtEvents;
 class EventPostType {
     private static $instance = null;
 
-    private function __construct() {
+    private function __construct() {       
         add_action('init', [$this, 'register_post_type']);
         add_action('init', [$this, 'register_taxonomy']);
     }

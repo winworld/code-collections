@@ -25,8 +25,8 @@ define('ART_EVENTS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ART_EVENTS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 require_once ART_EVENTS_PLUGIN_DIR . 'vendor/autoload.php';
-
-class Art_Events {
+class Art_Events
+{
     /**
      * Instance of this class
      *
@@ -51,11 +51,11 @@ class Art_Events {
     /**
      * Private constructor to prevent direct instantiation
      */
-    private function __construct() {
+    private function __construct()
+    {
         // Include required files
         // $includes = [
-        //     'includes/post-type/class-event-post-type.php',
-        //     'includes/meta-box/class-event-meta-box.php'
+        //     'includes/EventPostType.php',            
         // ];
 
         // foreach ($includes as $file) {
@@ -63,7 +63,7 @@ class Art_Events {
         //     if (file_exists($file_path)) {
         //         require_once $file_path;
         //     }
-        // }
+        // }        
 
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
 
@@ -75,7 +75,8 @@ class Art_Events {
      *
      * @return Art_Events
      */
-    public static function get_instance() {
+    public static function get_instance()
+    {
         if (null === self::$instance) {
             self::$instance = new self();
         }
@@ -85,9 +86,10 @@ class Art_Events {
     /**
      * Initialize hooks
      */
-    private function init_hooks() {
-        // Initialize instances
-        EventPostType::get_instance();        
+    private function init_hooks()
+    {
+        // Initialize instances        
+        EventPostType::get_instance();
         EventMetaBox::get_instance();
         Events::get_instance();
         RSVPPostType::get_instance();
@@ -112,8 +114,14 @@ class Art_Events {
         );
     }
 }
-
 // Initialize the plugin
-add_action('plugins_loaded', function() {
+add_action('plugin_loaded', function () {
     Art_Events::get_instance();
 });
+function dd($data)
+    {
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        wp_die();
+    }

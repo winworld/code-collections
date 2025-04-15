@@ -27,6 +27,7 @@ class RSVPPostType {
             'show_ui'       => true,
             'supports'      => ['title', 'custom-fields'],
             'capability_type' => 'post',
+            'show_in_menu'    => 'edit.php?post_type=art-event',
         ];
 
         register_post_type('rsvp', $args);
