@@ -15,6 +15,9 @@ class RSVPHandler
         add_filter('pre_post_update', [$this, 'handle_admin_rsvp_update'], 10, 2);
         add_action('admin_notices', [$this, 'display_custom_error_message']);
 
+        // Handle RSVP is sent to trash
+        add_action('trashed_post', [$this, 'remove_rsvp_on_trash'], 10, 1);      
+
         // Add admin_post hooks for RSVP actions
         add_action('admin_post_save_rsvp', [$this, 'handle_rsvp']);
         add_action('admin_post_nopriv_save_rsvp', [$this, 'handle_rsvp']);
@@ -126,6 +129,30 @@ class RSVPHandler
 
         // Redirect back with success message
         SiteHelper::redirect_with_message(wp_get_referer(), 'Sorry to see you go', 'success', true);
+    }
+
+    public function remove_rsvp_on_trash($post_id)
+    {
+        // Check if the post type is 'rsvp'
+        if (get_post_type($post_id) !== 'rsvp') {
+            return;
+        }
+
+        $rsvp_status = get_post_meta($post_id, 'rsvp_status', true);
+        if($rsvp_status === self::RSVP_NO) {
+            return;
+        }
+
+        // Get the event ID from the RSVP post meta
+        $event_id = get_post_meta($post_id, 'event_id', true);
+        $number_of_people = intval(get_post_meta($post_id, 'number_of_people', true));
+
+        // Update the event's current RSVP count
+        $current_rsvp_count = intval(get_post_meta($event_id, 'current_rsvp_count', true));
+        update_post_meta($event_id, 'current_rsvp_count', $current_rsvp_count - $number_of_people);
+
+        // Delete the RSVP post
+        wp_delete_post($post_id, true);
     }
 
     public function display_rsvp_form($content)
