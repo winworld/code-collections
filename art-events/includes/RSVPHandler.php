@@ -102,6 +102,33 @@ class RSVPHandler
         // Update current RSVP count
         update_post_meta($event_id, 'current_rsvp_count', $new_rsvp_count);
 
+        $event_title = get_the_title($event_id);
+        $event_start_date = get_post_meta($event_id, 'event_start_date', true);
+        $event_start_time = get_post_meta($event_id, 'event_start_time', true);
+        $event_end_date = get_post_meta($event_id, 'event_end_date', true);
+        $event_end_time = get_post_meta($event_id, 'event_end_time', true);
+
+        // Prepare email data
+        $email_data = [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'event_title' => $event_title,
+            'event_start_date' => $event_start_date,
+            'event_start_time' => $event_start_time,  
+            'event_end_date' => $event_end_date,
+            'event_end_time' => $event_end_time,               
+            'number_of_people' => $number_of_people,
+            'action' => 'created',
+        ];
+        
+        // If this is an update, set the action to 'updated'
+        if($is_update) {
+            $email_data['action'] = 'updated';
+        }        
+        // Send notification email
+        do_action('art_events_send_notification', $email_data, 'email');
+
         // Redirect back with success message
         $message = $is_update ? __('RSVP\'ed is successfully updated', 'art-events') : __('RSVP\'ed is successfully made', 'art-events');
         SiteHelper::redirect_with_message(wp_get_referer(), $message, 'success');

@@ -88,13 +88,15 @@ class Art_Events
      */
     private function init_hooks()
     {
-        // Initialize instances        
+        // Initialize instances   
+        PortalSettings::get_instance();     
         EventPostType::get_instance();
         EventMetaBox::get_instance();
         Events::get_instance();
         RSVPPostType::get_instance();
         RSVPMetaBox::get_instance();
         RSVPHandler::get_instance();
+        Notification::get_instance();
     }
 
     public function enqueue_admin_assets(): void
@@ -114,14 +116,8 @@ class Art_Events
         );
     }
 }
+
 // Initialize the plugin
 add_action('plugin_loaded', function () {
     Art_Events::get_instance();
 });
-function dd($data)
-    {
-        echo '<pre>';
-        print_r($data);
-        echo '</pre>';
-        wp_die();
-    }
