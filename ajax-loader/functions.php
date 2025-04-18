@@ -1,13 +1,12 @@
-
 <?php
 
 add_filter('the_content', 'test_media');
 function test_media($content) {
     if(is_page('stories') && isset($_GET['test'])) { 
-        $content = sc_load_the_content(['post_type' => 'post', 'posts_per_page' => 14]);
+        $content = sc_load_the_content(['post_type' => 'post', 'posts_per_page' => 1]);
         return $content;
     } else if(is_page('publications') && isset($_GET['test'])) { 
-        $content = sc_load_the_content(['post_type' => CF_POST_TYPE_PUBLICATION, 'posts_per_page' => 12]);
+        $content = sc_load_the_content(['post_type' => CF_POST_TYPE_PUBLICATION, 'posts_per_page' => 1]);
         return $content;
     }
     return $content;
@@ -23,35 +22,38 @@ function sc_load_the_content( $atts ) {
         case 'post':
             $atts['category_name'] = 'news-media,stories';
             return load_items(
-              $atts, 
-              'partials/media-item', 
+              $atts,               
               [
                 'action' => 'load_more_items',
                 'form' => '#filter-form',
               ],               
-              'No media release is found with your search criteria! Please try again.', 
-              'item-box media-release');
+            );
         case CF_POST_TYPE_PUBLICATION:            
             return load_items(
-              $atts, 
-              'partials/publication-item', 
+              $atts,               
               [
                 'action' => 'load_more_items',
                 'form' => '#filter-form',
                 'secondaryForm' => '#filter-pub-category',
               ],              
-              'No publication report is found with your search criteria! Please try again.', 
-              'item-box pub');
+            );
         default:
             return '<p>No content available.</p>';
     }
  
 } 
 
-function load_items($atts, $template, $js_params, $no_posts_message, $wrapper_class) {
+function load_items($atts, $js_params) {
    
-    $args = build_dynamic_query_args($atts, 1);
+    $args = build_dynamic_query_args($atts);
     $query = new WP_Query($args);
+  
+    // Get template, wrapper class, and no-posts message
+    $config = get_template_and_wrapper($atts['post_type']);
+    $template = $config['template'];
+    $wrapper_class = $config['wrapper_class'];
+    $no_posts_message = $config['no_posts_message'];
+  
     ob_start();
 
     // Output the appropriate filter template
@@ -130,59 +132,31 @@ function ajax_load_more_items() {
         wp_send_json_error(['message' => 'Permission Denied']);
     }
 
-    // Retrieve parameters from the AJAX request
-    $post_type = sanitize_text_field($_POST['post_type'] ?? 'post');
-    $paged = intval($_POST['page'] ?? 1);
-    $posts_per_page = intval($_POST['posts_per_page'] ?? 10);
-    $category = sanitize_text_field($_POST['category_name'] ?? '');
-    $year = sanitize_text_field($_POST['year'] ?? '');
-    $orderby = sanitize_text_field($_POST['orderby'] ?? 'date');
-    $search = sanitize_text_field($_POST['search'] ?? '');
+    $atts = [
+        'post_type' => sanitize_text_field($_POST['post_type'] ?? 'post'),
+        'posts_per_page' => intval($_POST['posts_per_page'] ?? 10),
+        'paged' => intval($_POST['page'] ?? 1),
+        'category_name' => sanitize_text_field($_POST['category_name'] ?? ''),
+        'year' => sanitize_text_field($_POST['year'] ?? ''),
+        'orderby' => sanitize_text_field($_POST['orderby'] ?? 'date'),
+        'search' => sanitize_text_field($_POST['search'] ?? ''),
+    ];
+  
+    // Get template, wrapper class, and no-posts message
+    $config = get_template_and_wrapper($atts['post_type']);
+    $template = $config['template'];
+    $wrapper_class = $config['wrapper_class'];
+    $no_posts_message = $config['no_posts_message'];
 
-
-    // Determine the template and wrapper class based on the post type
-    $template = '';
-    $wrapper_class = '';
-    $no_posts_message = 'No posts found.';
-
-    switch ($post_type) {
-        case 'post':
-            $template = 'partials/media-item';
-            $wrapper_class = 'item-box media-release';
-            $no_posts_message = 'No media release is found with your search criteria! Please try again.';
-            break;
-
-        case CF_POST_TYPE_PUBLICATION:
-            $template = 'partials/publication-item';
-            $wrapper_class = 'item-box pub';
-            $no_posts_message = 'No publication report is found with your search criteria! Please try again.';
-            break;
-
-        default:
-            wp_send_json_error(['message' => 'Invalid post type.']);
-            break;
-    }
-
-    // Build query arguments
-    $args = build_dynamic_query_args([
-        'post_type' => $post_type,
-        'posts_per_page' => $posts_per_page,
-        'paged' => $paged,
-        'category_name' => $category,
-        'year' => $year,
-        'orderby' => $orderby,
-        'search' => $search,
-    ], $paged);
-
- // var_dump($args);
-    // Execute the query
+    $args = build_dynamic_query_args($atts);      
+  
     $query = new WP_Query($args);
 
     if ($query->have_posts()) {
         ob_start();
         render_items($query, $template, $wrapper_class, $no_posts_message);
-        $has_more_posts = $query->max_num_pages > $paged;        
-        $next_page = $paged + 1;
+        $has_more_posts = $query->max_num_pages > $atts['paged'];        
+        $next_page = $atts['paged'] + 1;
     
         wp_reset_postdata();     
   
@@ -199,11 +173,11 @@ function ajax_load_more_items() {
 }
 
 function build_dynamic_query_args( $atts = array(), $paged = 1 ) {
-    // Build the query args
+    // Set the default query args
     $args = array(
         'post_type'      => $atts['post_type'],
         'posts_per_page' => $atts['posts_per_page'] ?? 10,
-        'paged'          => $paged, // This is dynamic for pagination
+        'paged'          => intval($atts['paged'] ?? 1), // This is dynamic for pagination
         'category_name'  => $atts['category_name'] ?? '', // Fixed categories
         'year'           => $atts['year'] ?? '', // Fixed categories
         'orderby'        => ($atts['orderby'] == 'date-asc' ? 'date' : 'date'),
@@ -238,6 +212,31 @@ function build_dynamic_query_args( $atts = array(), $paged = 1 ) {
     }
 
     return $args;
+}
+
+function get_template_and_wrapper($post_type) {
+    switch ($post_type) {
+        case 'post':
+            return [
+                'template' => 'partials/media-item',
+                'wrapper_class' => 'item-box media-release',
+                'no_posts_message' => 'No media release is found with your search criteria! Please try again.',
+            ];
+
+        case CF_POST_TYPE_PUBLICATION:
+            return [
+                'template' => 'partials/publication-item',
+                'wrapper_class' => 'item-box pub',
+                'no_posts_message' => 'No publication report is found with your search criteria! Please try again.',
+            ];
+
+        default:
+            return [
+                'template' => '',
+                'wrapper_class' => '',
+                'no_posts_message' => 'No posts found.',
+            ];
+    }
 }
 
 function get_query_mapping() {
