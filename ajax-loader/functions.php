@@ -57,7 +57,7 @@ class AjaxLoader {
         $config = $this->get_template_and_wrapper($atts['post_type']);
         $template = $config['template'];
         $wrapper_class = $config['wrapper_class'];
-        $no_posts_message = $config['no_posts_message'];
+        $no_item_message = $config['no_item_message'];
 
         ob_start();
 
@@ -67,7 +67,7 @@ class AjaxLoader {
 
         <div class="container">
             <div id="tobefilled" class="row">
-                <?php $this->render($query, $template, $wrapper_class, $no_posts_message); ?>
+                <?php $this->render($query, $template, $wrapper_class, $no_item_message); ?>
             </div>
 
             <?php if ($query->max_num_pages > 1) : ?>
@@ -107,7 +107,7 @@ class AjaxLoader {
     /**
      * Render items dynamically based on the query.     
      */
-    private function render($query, $template, $wrapper_class = 'item-box', $no_posts_message = 'No posts found.') {
+    private function render($query, $template, $wrapper_class = 'item-box', $no_item_message = 'No posts found.') {
         if ($query->have_posts()) :
             $counter = 0;
             while ($query->have_posts()) : $query->the_post();
@@ -121,7 +121,7 @@ class AjaxLoader {
             endwhile;
         else :
             ?>
-            <p><?php echo esc_html($no_posts_message); ?></p>
+            <p><?php echo esc_html($no_item_message); ?></p>
             <?php
         endif;
     }
@@ -148,14 +148,14 @@ class AjaxLoader {
         $config = $this->get_template_and_wrapper($atts['post_type']);
         $template = $config['template'];
         $wrapper_class = $config['wrapper_class'];
-        $no_posts_message = $config['no_posts_message'];
+        $no_item_message = $config['no_item_message'];
 
         $args = $this->build_query($atts);        
         $query = new WP_Query($args);
 
         if ($query->have_posts()) {
             ob_start();
-            $this->render($query, $template, $wrapper_class, $no_posts_message);
+            $this->render($query, $template, $wrapper_class, $no_item_message);
             $has_more_posts = $query->max_num_pages > $atts['paged'];
             $next_page = $atts['paged'] + 1;
 
@@ -167,7 +167,7 @@ class AjaxLoader {
                 'next_page' => $next_page,
             ]);
         } else {
-            wp_send_json_error(['message' => '<div class="col text-md text-center mt-5">' . $no_posts_message . '</div>']);
+            wp_send_json_error(['message' => '<div class="col text-md text-center mt-5">' . $no_item_message . '</div>']);
         }
 
         wp_die();
@@ -285,21 +285,21 @@ class AjaxLoader {
                 return [
                     'template' => 'partials/media-item',
                     'wrapper_class' => 'item-box media-release',
-                    'no_posts_message' => 'No media release is found with your search criteria! Please try again.',
+                    'no_item_message' => 'No media release is found with your search criteria! Please try again.',
                 ];
 
             case CF_POST_TYPE_PUBLICATION:
                 return [
                     'template' => 'partials/publication-item',
                     'wrapper_class' => 'item-box pub',
-                    'no_posts_message' => 'No publication report is found with your search criteria! Please try again.',
+                    'no_item_message' => 'No publication report is found with your search criteria! Please try again.',
                 ];
 
             default:
                 return [
                     'template' => '',
                     'wrapper_class' => '',
-                    'no_posts_message' => 'No posts found.',
+                    'no_item_message' => 'No posts found.',
                 ];
         }
     }
@@ -322,8 +322,6 @@ class AjaxLoader {
                 $years[] = $year; 
             }
         }
-        
-        rsort($years);
 
         return $years;
     }
