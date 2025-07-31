@@ -6,7 +6,26 @@ echo "🗑️ Starting S3 bucket deletions at $(date)" | tee -a "$logfile"
 echo "==========================================" | tee -a "$logfile"
 
 buckets=(
-totalbots
+amgmm
+anywheremyanmarproperty
+brillianttriangletravelsntours
+cookie-tv
+cosmo
+digitaldots
+eugenics
+experiencerentacar
+ghyes
+goldenmrauku
+hmancho
+hmanchomedical
+kgplegal
+kky
+myanmargetawaytour
+sakura
+swezinmay
+teak
+worth-services
+yangoods
 )
 
 total=${#buckets[@]}
@@ -42,3 +61,4 @@ done
 
 echo ""
 echo "🏁 All deletions and bucket removals finished at $(date)" | tee -a "$logfile"
+
